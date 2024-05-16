@@ -1,25 +1,36 @@
-# GitHub Action Testing for git commands through AWS SSM2
-name: build-deploy-staging 
+name: build-deploy-staging
 
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   build-dev:
-    runs-on: ubuntu-latest # Use a suitable GitHub-hosted runner
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: mskelton/setup-yarn@v2.0.0
+      - name: Setup Yarn
+        uses: mskelton/setup-yarn@v2.0.0
         with:
           version: 1.22.0
-      
-      - uses: actions/checkout@v4 # Checkout the repository
-      - uses: actions/cache@v3 # Cache dependencies for faster builds
 
-      # - run: echo '${{ secrets.ENV_FILE }}' | base64 -d > .env # Create .env file from secret
-      - run: yarn # Install dependencies
-      - run: yarn build # Build the Next.js app
+      - name: Checkout code
+        uses: actions/checkout@v4
 
- 
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.yarn/cache
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-cache-
+
+      # Uncomment the next line if you need to use a secret to create a .env file
+      # - name: Create .env file from secret
+      #   run: echo '${{ secrets.ENV_FILE }}' | base64 -d > .env
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Build Next.js app
+        run: yarn build
